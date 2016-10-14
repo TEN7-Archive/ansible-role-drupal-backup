@@ -1,0 +1,38 @@
+---
+- name: generate the db backup path
+  set_fact:
+    db_backup_path: "{{ db_backup_dir }}/{{ db_name }}_{{lookup('pipe','date +%Y%m%d%H%M%S')}}.sql.gz"
+- name: create backup directory
+  file:
+    path: "{{ db_backup_dir }}"
+    state: directory
+    owner: "{{ db_backup_owner }}"
+    group: "{{ db_backup_group }}"
+    mode: "{{ db_backup_dir_mode }}"
+- name: find old database dumps
+  find:
+    path: "{{ db_backup_dir }}"
+    patterns: "{{ db_name }}_*.sql.gz"
+    age: "{{ db_backup_clear_age }}"
+  register: result
+- name: delete old database dumps
+  find:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ result.files }}"
+- name: backup database
+  mysql_db:
+    state: dump
+    name: "{{ db_name }}"
+    target: "{{ db_backup_path }}"
+    login_host: "{{ db_host }}"
+    login_port: "{{ db_port }}"
+    login_user: "{{ db_user }}"
+    login_password: "{{ db_password }}"
+- name: chown the db backup
+  file:
+    path: "{{ db_backup_path }}"
+    state: file
+    owner: "{{ db_backup_owner }}"
+    group: "{{ db_backup_group }}"
+    mode: "0500"

@@ -1,0 +1,46 @@
+---
+- name: generate the site backup path
+  set_fact:
+    site_backup_path: "{{ site_backup_dir }}/{{ site_backup_prefix }}_{{lookup('pipe','date +%Y%m%d%H%M%S')}}.tar.gz"
+- name: create backup directory
+  file:
+    path: "{{ site_backup_dir }}"
+    state: directory
+    owner: "{{ site_backup_owner }}"
+    group: "{{ site_backup_group }}"
+    mode: "{{ site_backup_dir_mode }}"
+- name: find old site backups
+  find:
+    path: "{{ site_backup_dir }}"
+    patterns: "{{ site_backup_prefix }}_*.tar.gz"
+    age: "{{ site_backup_clear_age }}"
+  register: result
+- name: delete old site backups
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ result.files }}"
+#
+# Commented out because it requires Ansible 2.2, and it dies on bigger archives.
+#
+# - name: create new site archive
+#   archive:
+#     path: "{{ web_dir_path }}"
+#     dest: "{{ site_backup_path }}"
+#     compression: gz
+- name: create new site archive
+  command: "tar -czf {{ site_backup_path }} {{ web_dir_path }}"
+  args:
+    creates: "{{ site_backup_path }}"
+  when: site_backup_exclude is not defined
+- name: create new site archive excluding files directory
+  command: "tar --exclude=\'{{ site_backup_exclude }}\' -czf {{ site_backup_path }} {{ web_dir_path }}"
+  args:
+    creates: "{{ site_backup_path }}"
+  when: site_backup_exclude is defined
+- name: chown the site backup file
+  file:
+    path: "{{ site_backup_path }}"
+    owner: "{{ web_user_name }}"
+    group: "{{ site_backup_group }}"
+    mode: "0500"

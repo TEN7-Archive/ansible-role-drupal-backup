@@ -1,0 +1,14 @@
+---
+# database backup defaults
+db_backup_clear_age: 5d
+db_backup_path: "{{ db_backup_dir }}/{{ db_name }}_{{lookup('pipe','date +%Y%m%d%H%M%S')}}.sql.gz"
+db_backup_dir_mode: "0755"
+db_host: "127.0.0.1"
+db_port: 3306
+
+# site backup defaults
+site_backup_dir: "~/site-backups"
+site_backup_prefix: "ansible_generated_backup_"
+site_backup_clear_age: 5d
+site_backup_dir_mode: "0755"
+# site_backup_exclude: "/path/to/exclude"

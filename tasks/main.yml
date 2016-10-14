@@ -1,0 +1,5 @@
+---
+# tasks file for drupal-backup
+- include: db-backup.yml
+- include: site-backup.yml
+- include: fetch.yml
