@@ -1,7 +1,10 @@
 ---
+- name: generate the site backup file name
+  set_fact:
+    site_backup_file: "{{ site_backup_prefix }}_{{lookup('pipe','date +%Y%m%d%H%M%S')}}.tar.gz"
 - name: generate the site backup path
   set_fact:
-    site_backup_path: "{{ site_backup_dir }}/{{ site_backup_prefix }}_{{lookup('pipe','date +%Y%m%d%H%M%S')}}.tar.gz"
+    site_backup_path: "{{ site_backup_dir }}/{{ site_backup_file}}"
 - name: create backup directory
   file:
     path: "{{ site_backup_dir }}"
@@ -20,27 +23,38 @@
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ result.files }}"
+- name: Check if the src directory exists
+  stat:
+    path: "{{ site_backup_src }}"
+  register: site_backup_src_stat
 #
 # Commented out because it requires Ansible 2.2, and it dies on bigger archives.
 #
 # - name: create new site archive
 #   archive:
-#     path: "{{ web_dir_path }}"
+#     path: "{{ site_backup_src }}"
 #     dest: "{{ site_backup_path }}"
 #     compression: gz
 - name: create new site archive
-  command: "tar -czf {{ site_backup_path }} {{ web_dir_path }}"
+  command: "tar -czf {{ site_backup_path }} {{ site_backup_src }}"
   args:
     creates: "{{ site_backup_path }}"
-  when: site_backup_exclude is not defined
+  when:
+    - site_backup_exclude is not defined
+    - site_backup_src_stat.stat.exists
 - name: create new site archive excluding files directory
-  command: "tar --exclude=\'{{ site_backup_exclude }}\' -czf {{ site_backup_path }} {{ web_dir_path }}"
+  command: >
+    tar --exclude="{{ site_backup_exclude }}" -czf {{ site_backup_path }} {{ web_dir_path }}
   args:
     creates: "{{ site_backup_path }}"
-  when: site_backup_exclude is defined
+  when:
+    - site_backup_exclude is defined
+    - site_backup_src_stat.stat.exists
 - name: chown the site backup file
   file:
     path: "{{ site_backup_path }}"
-    owner: "{{ web_user_name }}"
+    owner: "{{ site_backup_owner }}"
     group: "{{ site_backup_group }}"
     mode: "0500"
+  when:
+    - site_backup_src_stat.stat.exists
