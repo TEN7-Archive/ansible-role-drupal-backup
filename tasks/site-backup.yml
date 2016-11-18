@@ -41,6 +41,15 @@
     creates: "{{ site_backup_path }}"
   when:
     - site_backup_exclude is not defined
+    - (site_backup_follow_links is not defined) or (not site_backup_follow_links)
+    - site_backup_src_stat.stat.exists
+- name: create new site archive including links
+  command: "tar -czfh {{ site_backup_path }} {{ site_backup_src }}"
+  args:
+    creates: "{{ site_backup_path }}"
+  when:
+    - site_backup_exclude is not defined
+    - site_backup_follow_links
     - site_backup_src_stat.stat.exists
 - name: create new site archive excluding files directory
   command: >
@@ -49,6 +58,7 @@
     creates: "{{ site_backup_path }}"
   when:
     - site_backup_exclude is defined
+    - (site_backup_follow_links is not defined) or (not site_backup_follow_links)
     - site_backup_src_stat.stat.exists
 - name: chown the site backup file
   file:
