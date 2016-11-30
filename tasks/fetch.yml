@@ -3,9 +3,11 @@
   fetch:
     src: "{{ db_backup_path }}"
     dest: "{{ fetch_local_db_backup_dir }}"
+    flat: yes
   when: fetch_local_db_backup_dir is defined
 - name: fetch site backup
   fetch:
     src: "{{ site_backup_path }}"
     dest: "{{ fetch_local_site_backup_dir }}"
+    flat: yes
   when: fetch_local_site_backup_dir is defined
