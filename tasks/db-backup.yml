@@ -19,7 +19,7 @@
     age: "{{ db_backup_clear_age }}"
   register: result
 - name: delete old database dumps
-  find:
+  file:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ result.files }}"
