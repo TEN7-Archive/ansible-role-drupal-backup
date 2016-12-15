@@ -13,3 +13,9 @@ site_backup_clear_age: 5d
 site_backup_dir_mode: "0755"
 # site_backup_exclude: "/path/to/exclude"
 site_backup_follow_links: false
+
+# Sync backup settings
+sync_backup_dir: "~/sync-backups"
+sync_backup_prefix: "{{ site_backup_prefix }}"
+sync_backup_clear_age: "5d"
+sync_backup_dir_mode: "0755"

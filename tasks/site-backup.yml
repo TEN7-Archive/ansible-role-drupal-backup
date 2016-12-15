@@ -1,7 +1,7 @@
 ---
 - name: generate the site backup file name
   set_fact:
-    site_backup_file: "{{ site_backup_prefix }}_{{lookup('pipe','date +%Y%m%d%H%M%S')}}.tar.gz"
+    site_backup_file: "{{ site_backup_prefix }}_{{ drupal_backup_timestamp }}.tar.gz"
 - name: generate the site backup path
   set_fact:
     site_backup_path: "{{ site_backup_dir }}/{{ site_backup_file}}"

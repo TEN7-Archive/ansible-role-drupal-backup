@@ -1,0 +1,34 @@
+---
+- name: Generate the sync backup filename.
+  set_fact:
+    sync_backup_file: "{{ sync_backup_prefix }}_sync_{{ drupal_backup_timestamp }}.tar.gz"
+  when: sync_dir is defined
+- name: generate the sync backup path
+  set_fact:
+    sync_backup_path: "{{ sync_backup_dir }}/{{ sync_backup_file }}"
+  when: sync_dir is defined
+- name: Create the sync-backup directory
+  file:
+    path: "{{ sync_backup_dir }}"
+    state: directory
+    mode: "{{ sync_backup_dir_mode }}"
+  when: sync_dir is defined
+- name: find old sync backups
+  find:
+    path: "{{ sync_backup_dir }}"
+    patterns: "{{ site_backup_prefix }}_sync_*.tar.gz"
+    age: "{{ sync_backup_clear_age }}"
+  register: result
+  when: sync_dir is defined
+- name: delete old sync backups
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ result.files }}"
+  when: sync_dir is defined
+- name: Backup the sync directory
+  shell: >
+    tar -czf {{ sync_backup_path }} {{ sync_dir }}
+  args:
+    creates: "{{ sync_backup_path }}"
+  when: sync_dir is defined

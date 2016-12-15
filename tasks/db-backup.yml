@@ -1,7 +1,7 @@
 ---
 - name: generate the db backup file name
   set_fact:
-    db_backup_file: "{{ db_name }}_{{lookup('pipe','date +%Y%m%d%H%M%S')}}.sql.gz"
+    db_backup_file: "{{ db_name }}_{{ drupal_backup_timestamp }}.sql.gz"
 - name: generate the db backup path
   set_fact:
     db_backup_path: "{{ db_backup_dir }}/{{ db_backup_file }}"

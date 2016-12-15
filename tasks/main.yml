@@ -1,5 +1,9 @@
 ---
 # tasks file for drupal-backup
+- name: Generate the backup timestamp.
+  set_fact:
+    drupal_backup_timestamp: "{{lookup('pipe','date +%Y%m%d%H%M%S')}}"
 - include: db-backup.yml
 - include: site-backup.yml
+- include: sync-backup.yml
 - include: fetch.yml
