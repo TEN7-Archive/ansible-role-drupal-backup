@@ -5,11 +5,12 @@
     state: directory
   when: fetch_local_db_backup_dir is defined
   delegate_to: 127.0.0.1
-- name: fetch database backup
-  fetch:
-    src: "{{ db_backup_path }}"
-    dest: "{{ fetch_local_db_backup_dir }}/{{ db_backup_file }}"
-    flat: yes
+- name: fetch database backups from remote
+  synchronize:
+    mode: pull
+    src: "{{ db_backup_dir }}/"
+    dest: "{{ fetch_local_db_backup_dir }}/"
+    delete: yes
   when: fetch_local_db_backup_dir is defined
 - name: create backup directory
   file:
@@ -18,8 +19,9 @@
   when: fetch_local_site_backup_dir is defined
   delegate_to: 127.0.0.1
 - name: fetch site backup
-  fetch:
-    src: "{{ site_backup_path }}"
-    dest: "{{ fetch_local_site_backup_dir }}/{{ site_backup_file }}"
-    flat: yes
+  synchronize:
+    mode: pull
+    src: "{{ site_backup_dir }}/"
+    dest: "{{ fetch_local_site_backup_dir }}/"
+    delete: yes
   when: fetch_local_site_backup_dir is defined
