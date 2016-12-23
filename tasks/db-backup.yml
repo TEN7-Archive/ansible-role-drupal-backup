@@ -29,7 +29,7 @@
     name: "{{ db_name }}"
     target: "{{ db_backup_path }}"
     login_host: "{{ db_host }}"
-    login_port: "{{ db_port }}"
+    login_port: "{{ db_port | int }}"
     login_user: "{{ db_user }}"
     login_password: "{{ db_password }}"
 - name: chown the db backup
