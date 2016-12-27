@@ -10,7 +10,6 @@ db_port: 3306
 site_backup_prefix: "ansible_generated_backup_"
 site_backup_clear_age: 5d
 site_backup_dir_mode: "0755"
-# site_backup_exclude: "/path/to/exclude"
 site_backup_follow_links: false
 
 # Sync backup settings
