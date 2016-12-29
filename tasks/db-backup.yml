@@ -22,7 +22,7 @@
   file:
     path: "{{ item.path }}"
     state: absent
-  with_items: "{{ result.files }}"
+  with_items: "{{ result.files | default([]) }}"
 - name: backup database
   mysql_db:
     state: dump

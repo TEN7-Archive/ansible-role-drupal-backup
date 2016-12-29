@@ -24,7 +24,7 @@
   file:
     path: "{{ item.path }}"
     state: absent
-  with_items: "{{ result.files }}"
+  with_items: "{{ result.files | default([]) }}"
   when: sync_dir is defined
 - name: Backup the sync directory
   shell: >
