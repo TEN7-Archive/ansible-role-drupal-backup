@@ -1,10 +1,29 @@
 ---
+# Fetch Database backups.
 - name: create local database backup directory
   file:
     path: "{{ fetch_local_db_backup_dir }}"
     state: directory
   when: fetch_local_db_backup_dir is defined
   delegate_to: 127.0.0.1
+
+- name: find old fetched database dumps
+  find:
+    path: "{{ fetch_local_db_backup_dir }}"
+    patterns: "{{ db_name }}_*.sql.gz"
+    age: "{{ db_backup_clear_age }}"
+  register: result
+  when: fetch_local_db_backup_dir is defined
+  delegate_to: 127.0.0.1
+
+- name: delete old fetched database dumps
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ result.files | default([]) }}"
+  when: fetch_local_db_backup_dir is defined
+  delegate_to: 127.0.0.1
+
 - name: fetch database backups from remote
   synchronize:
     mode: pull
@@ -12,12 +31,32 @@
     dest: "{{ fetch_local_db_backup_dir }}/"
     delete: yes
   when: fetch_local_db_backup_dir is defined
+
+# Fetch site backups
 - name: create local site backup directory
   file:
     path: "{{ fetch_local_site_backup_dir }}"
     state: directory
   when: fetch_local_site_backup_dir is defined
   delegate_to: 127.0.0.1
+
+- name: find old fetched site backups
+  find:
+    path: "{{ fetch_local_site_backup_dir }}"
+    patterns: "{{ site_backup_prefix }}_*.tar.gz"
+    age: "{{ site_backup_clear_age }}"
+  register: result
+  when: fetch_local_site_backup_dir is defined
+  delegate_to: 127.0.0.1
+
+- name: delete old fetched site backups
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ result.files | default([]) }}"
+  when: fetch_local_site_backup_dir is defined
+  delegate_to: 127.0.0.1
+
 - name: fetch site backup
   synchronize:
     mode: pull
@@ -25,13 +64,36 @@
     dest: "{{ fetch_local_site_backup_dir }}/"
     delete: yes
   when: fetch_local_site_backup_dir is defined
+
+# Fetch sync backups
 - name: create local sync backup directory
   file:
     path: "{{ fetch_local_sync_backup_dir }}"
     state: directory
   when: fetch_local_sync_backup_dir is defined
   delegate_to: 127.0.0.1
-- name: fetch site backup
+
+- name: find old fetched sync backups
+  find:
+    path: "{{ sync_backup_dir }}"
+    patterns: "{{ site_backup_prefix }}_sync_*.tar.gz"
+    age: "{{ sync_backup_clear_age }}"
+  register: result
+  when:
+    - sync_dir is defined
+    - fetch_local_sync_backup_dir is defined
+  delegate_to: 127.0.0.1
+
+- name: delete old fetched sync backups
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ result.files | default([]) }}"
+  when: fetch_local_sync_backup_dir is defined
+  delegate_to: 127.0.0.1
+
+
+- name: fetch sync backup
   synchronize:
     mode: pull
     src: "{{ sync_backup_dir }}/"
