@@ -1,5 +1,5 @@
 ---
-- name: create local database directory
+- name: create local database backup directory
   file:
     path: "{{ fetch_local_db_backup_dir }}"
     state: directory
@@ -12,7 +12,7 @@
     dest: "{{ fetch_local_db_backup_dir }}/"
     delete: yes
   when: fetch_local_db_backup_dir is defined
-- name: create backup directory
+- name: create local site backup directory
   file:
     path: "{{ fetch_local_site_backup_dir }}"
     state: directory
@@ -25,3 +25,16 @@
     dest: "{{ fetch_local_site_backup_dir }}/"
     delete: yes
   when: fetch_local_site_backup_dir is defined
+- name: create local sync backup directory
+  file:
+    path: "{{ fetch_local_sync_backup_dir }}"
+    state: directory
+  when: fetch_local_sync_backup_dir is defined
+  delegate_to: 127.0.0.1
+- name: fetch site backup
+  synchronize:
+    mode: pull
+    src: "{{ sync_backup_dir }}/"
+    dest: "{{ fetch_local_sync_backup_dir }}/"
+    delete: yes
+  when: fetch_local_sync_backup_dir is defined
