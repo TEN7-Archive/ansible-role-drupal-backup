@@ -26,9 +26,15 @@
     state: absent
   with_items: "{{ result.files | default([]) }}"
   when: sync_dir is defined
+- name: Check if the sync directory exists
+  stat:
+    path: "{{ sync_dir }}"
+  register: sync_dir_stat
 - name: Backup the sync directory
   shell: >
     tar -czf {{ sync_backup_path }} {{ sync_dir }}
   args:
     creates: "{{ sync_backup_path }}"
-  when: sync_dir is defined
+  when:
+    - sync_dir is defined
+    - sync_dir_stat.stat.exists
