@@ -30,6 +30,7 @@
   stat:
     path: "{{ sync_dir }}"
   register: sync_dir_stat
+  when: sync_dir is defined
 - name: Backup the sync directory
   shell: >
     tar -czf {{ sync_backup_path }} {{ sync_dir }}
