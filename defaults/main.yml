@@ -16,3 +16,5 @@ site_backup_follow_links: false
 sync_backup_prefix: "{{ site_backup_prefix }}"
 sync_backup_clear_age: "5d"
 sync_backup_dir_mode: "0755"
+
+drupal_backup_additional_dbs: []

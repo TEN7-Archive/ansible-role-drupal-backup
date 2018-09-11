@@ -1,10 +1,4 @@
 ---
-- name: generate the db backup file name
-  set_fact:
-    db_backup_file: "{{ db_name }}_{{ drupal_backup_timestamp }}.sql.gz"
-- name: generate the db backup path
-  set_fact:
-    db_backup_path: "{{ db_backup_dir }}/{{ db_backup_file }}"
 - name: create backup directory
   file:
     path: "{{ db_backup_dir }}"
@@ -23,19 +17,28 @@
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ result.files | default([]) }}"
-- name: backup database
+- name: Generate default database item
+  set_fact:
+    __default_database:
+        - name: "{{ db_name }}"
+- name: Generate database list
+  set_fact:
+    __database_list: "{{ __default_database | list + drupal_backup_additional_dbs | list }}"
+- name: backup databases
   mysql_db:
     state: dump
-    name: "{{ db_name }}"
-    target: "{{ db_backup_path }}"
-    login_host: "{{ db_host }}"
-    login_port: "{{ db_port | int }}"
-    login_user: "{{ db_user }}"
-    login_password: "{{ db_password }}"
-- name: chown the db backup
+    name: "{{ item.name }}"
+    target: "{{ db_backup_dir }}/{{ item.name }}_{{ drupal_backup_timestamp }}.sql.gz"
+    login_host: "{{ item.host | default(db_host) }}"
+    login_port: "{{ item.port | default(db_port) | int }}"
+    login_user: "{{ item.user | default(db_user) }}"
+    login_password: "{{ item.password | default(db_password) }}"
+  with_items: "{{ __database_list }}"
+- name: chown the db backups
   file:
-    path: "{{ db_backup_path }}"
+    path: "{{ db_backup_dir }}/{{ item.name }}_{{ drupal_backup_timestamp }}.sql.gz"
     state: file
-    owner: "{{ db_backup_owner }}"
-    group: "{{ db_backup_group }}"
+    owner: "{{ item.owner | default(db_backup_owner) }}"
+    group: "{{ item.group | default(db_backup_group) }}"
     mode: "0500"
+  with_items: "{{ __database_list }}"
