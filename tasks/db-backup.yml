@@ -6,17 +6,6 @@
     owner: "{{ db_backup_owner }}"
     group: "{{ db_backup_group }}"
     mode: "{{ db_backup_dir_mode }}"
-- name: find old database dumps
-  find:
-    path: "{{ db_backup_dir }}"
-    patterns: "{{ db_name }}_*.sql.gz"
-    age: "{{ db_backup_clear_age }}"
-  register: result
-- name: delete old database dumps
-  file:
-    path: "{{ item.path }}"
-    state: absent
-  with_items: "{{ result.files | default([]) }}"
 - name: Generate default database item
   set_fact:
     __default_database:
@@ -24,6 +13,20 @@
 - name: Generate database list
   set_fact:
     __database_list: "{{ __default_database | list + drupal_backup_additional_dbs | list }}"
+- name: Generate the pattern list
+  set_fact:
+    __patterns: "{{ __database_list | map(attribute='name') |  map('regex_replace', '(.*)', '\\1_*.sql.gz') | list }}"
+- name: find old database dumps
+  find:
+    path: "{{ db_backup_dir }}"
+    patterns: "{{ __patterns }}"
+    age: "{{ db_backup_clear_age }}"
+  register: result
+- name: delete old database dumps
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ result.files | default([]) }}"
 - name: backup databases
   mysql_db:
     state: dump
