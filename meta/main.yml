@@ -1,4 +1,5 @@
 galaxy_info:
+  role_name: "drupal-backup"
   author: socketwench
   description: Performs a database and site backup for Drupal sites
   company: TEN7
